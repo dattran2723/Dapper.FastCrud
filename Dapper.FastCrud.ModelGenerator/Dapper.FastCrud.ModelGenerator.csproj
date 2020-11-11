@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
+    <AssemblyTitle>Dapper.FastCrud.ModelGenerator</AssemblyTitle>
+    <AssemblyName>Dapper.FastCrud.ModelGenerator</AssemblyName>	
+	<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <EnableDocumentationFile>false</EnableDocumentationFile>
+
+	<Authors>MoonStorm</Authors>
+	<PackageId>Dapper.FastCrud.ModelGenerator</PackageId>
+	<PackageIconUrl>https://raw.githubusercontent.com/MoonStorm/Dapper.FastCRUD/master/logo.png	</PackageIconUrl>
+	<PackageLicenseUrl>http://www.opensource.org/licenses/MIT</PackageLicenseUrl>
+	<PackageTags>dapper fastcrud entity generator orm</PackageTags>
+
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<IncludeBuildOutput>False</IncludeBuildOutput>
+
+	<Company />
+	<Description>Entity generation for Dapper.FastCrud from a LocalDb or an MsSqlServer database.
+Entity domain partitioning can be achieved via separate template configurations. The installation package provides a sample config file, SampleModelGeneratorConfig.tt.
+Do not modify GenericModelGenerator.tt, as future upgrades via NuGet will fail to update this file.
+More details are available on the project site.</Description>
+	<PackageProjectUrl>https://github.com/MoonStorm/Dapper.FastCRUD</PackageProjectUrl>
+
+	<Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo_unused.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Content\Models\GenericModelGenerator.tt" />
+    <None Remove="Content\Models\SampleModelGeneratorConfig.tt" />
+    <None Remove="Tools\Install.ps1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="Content\Models\GenericModelGenerator.tt">
+		<Generator></Generator>
+		<Pack>true</Pack>
+		<PackagePath>Content\Models\</PackagePath>
+    </Content>
+    <Content Include="Content\Models\SampleModelGeneratorConfig.tt">
+		<Generator></Generator>
+		<Pack>true</Pack>
+		<PackagePath>Content\Models\</PackagePath>
+    </Content>
+    <Content Include="Tools\Install.ps1">
+		<Generator></Generator>
+		<Pack>false</Pack>
+		<PackagePath>Tools\</PackagePath>
+	</Content>
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+		<Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  
+</Project>
