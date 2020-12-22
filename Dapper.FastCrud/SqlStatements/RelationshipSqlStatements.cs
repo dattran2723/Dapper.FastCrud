@@ -23,23 +23,23 @@
         /// Constructor that takes as arguments the statements for an existing relationship plus a newly joined entity sql builder.
         /// </summary>
         protected RelationshipSqlStatements(RelationshipSqlStatements<TEntity> relationshipStatements, GenericStatementSqlBuilder newlyJoinedEntitySqlBuilder)
-            :this(relationshipStatements._mainEntitySqlStatements, relationshipStatements._joinedEntitiesSqlBuilders,newlyJoinedEntitySqlBuilder)
-        {            
+            : this(relationshipStatements._mainEntitySqlStatements, relationshipStatements._joinedEntitiesSqlBuilders, newlyJoinedEntitySqlBuilder)
+        {
         }
 
         /// <summary>
         /// Constructor that takes as arguments the sql statements for the main entity plus a newly joined entity sql builder.
         /// </summary>
         protected RelationshipSqlStatements(ISqlStatements<TEntity> mainEntitySqlStatements, GenericStatementSqlBuilder newlyJoinedEntitySqlBuilder)
-            :this(mainEntitySqlStatements, null, newlyJoinedEntitySqlBuilder)
-        {            
+            : this(mainEntitySqlStatements, null, newlyJoinedEntitySqlBuilder)
+        {
         }
 
         private RelationshipSqlStatements(ISqlStatements<TEntity> mainEntitySqlStatements, GenericStatementSqlBuilder[] joinedEntitiesSqlBuilders, GenericStatementSqlBuilder newlyJoinedEntitySqlBuilder)
         {
             _mainEntitySqlStatements = mainEntitySqlStatements;
 
-            var alreadyJoinedEntitiesCount = joinedEntitiesSqlBuilders?.Length??0;
+            var alreadyJoinedEntitiesCount = joinedEntitiesSqlBuilders?.Length ?? 0;
 
             _joinedEntitiesSqlBuilders = new GenericStatementSqlBuilder[alreadyJoinedEntitiesCount + 1];
             _allEntityMappings = new EntityMapping[alreadyJoinedEntitiesCount + 2];
@@ -80,11 +80,11 @@
 
             var relationshipInstanceBuilder = new RelationshipEntityInstanceBuilder(_allEntityMappings);
             var queriedEntityIdentities = this.Query(connection,
-                statement, 
+                statement,
                 splitOnCondition,
                 keyEntity,
                 false,
-                statementOptions.Transaction, 
+                statementOptions.Transaction,
                 (int?)statementOptions.CommandTimeout?.TotalSeconds, relationshipInstanceBuilder);
             return this.FilterDuplicates(queriedEntityIdentities).SingleOrDefault();
         }
@@ -104,12 +104,12 @@
                 whereClause: $"{this.SqlBuilder.ConstructKeysWhereClause(this.SqlBuilder.GetTableName())}");
 
             var relationshipInstanceBuilder = new RelationshipEntityInstanceBuilder(_allEntityMappings);
-            var queriedEntityIdentities  = await this.QueryAsync(connection, 
-                statement, 
-                splitOnCondition, 
+            var queriedEntityIdentities = await this.QueryAsync(connection,
+                statement,
+                splitOnCondition,
                 keyEntity,
                 false,
-                statementOptions.Transaction, 
+                statementOptions.Transaction,
                 (int?)statementOptions.CommandTimeout?.TotalSeconds, relationshipInstanceBuilder);
 
             // a problem in the Dapper library would cause this function to fail
@@ -251,6 +251,24 @@
         }
 
         /// <summary>
+        /// Performs an BULK INSERT operation
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void BulkInsert(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions)
+        {
+            _mainEntitySqlStatements.BulkInsert(connection, entities, statementOptions);
+        }
+
+        /// <summary>
+        /// Performs an BUILK INSERT operation
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task BulkInsertAsync(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions)
+        {
+            return _mainEntitySqlStatements.BulkInsertAsync(connection, entities, statementOptions);
+        }
+
+        /// <summary>
         /// Performs an UPDATE operation on an entity identified by its keys.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -332,13 +350,13 @@
         }
 
         protected abstract IEnumerable<RelationshipEntityInstanceIdentity<TEntity>> Query(
-            IDbConnection connection, 
-            string statement, 
-            string splitOnCondition, 
+            IDbConnection connection,
+            string statement,
+            string splitOnCondition,
             object parameters,
             bool buffered,
-            IDbTransaction transaction, 
-            int? commandTimeout, 
+            IDbTransaction transaction,
+            int? commandTimeout,
             RelationshipEntityInstanceBuilder relationshipInstanceBuilder);
 
         protected abstract Task<IEnumerable<RelationshipEntityInstanceIdentity<TEntity>>> QueryAsync(

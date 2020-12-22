@@ -10,7 +10,7 @@
     using Dapper.FastCrud.SqlBuilders;
     using Dapper.FastCrud.Validations;
 
-    internal class GenericSqlStatements<TEntity>: ISqlStatements<TEntity>
+    internal class GenericSqlStatements<TEntity> : ISqlStatements<TEntity>
     {
         private readonly GenericStatementSqlBuilder _sqlBuilder;
 
@@ -21,7 +21,7 @@
         {
             _sqlBuilder = sqlBuilder;
         }
-        
+
         /// <summary>
         /// Gets the publicly accessible SQL builder.
         /// </summary>
@@ -32,7 +32,7 @@
         /// </summary>
         public ISqlStatements<TEntity> CombineWith<TJoinedEntity>(ISqlStatements<TJoinedEntity> joinedEntitySqlStatements)
         {
-            return new TwoEntitiesRelationshipSqlStatements<TEntity,TJoinedEntity>(this, joinedEntitySqlStatements.SqlBuilder);
+            return new TwoEntitiesRelationshipSqlStatements<TEntity, TJoinedEntity>(this, joinedEntitySqlStatements.SqlBuilder);
         }
 
         /// <summary>
@@ -109,12 +109,86 @@
             }
             else
             {
-                connection.Execute(
+                await connection.ExecuteAsync(
                     _sqlBuilder.ConstructFullInsertStatement(),
                     entity,
                     transaction: statementOptions.Transaction,
                     commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds);
             }
+        }
+
+        /// <summary>
+        /// Performs an Bulk INSERT operation
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void BulkInsert(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions)
+        {
+            var hasTransaction = statementOptions.Transaction != null;
+            IDbTransaction transaction = statementOptions.Transaction ?? connection.BeginTransaction(IsolationLevel.Serializable);
+
+            if (_sqlBuilder.RefreshOnInsertProperties.Length > 0)
+            {
+                var insertedEntity =
+                     connection.Query<TEntity>(
+                         _sqlBuilder.ConstructFullInsertStatement(),
+                         entities,
+                         transaction: transaction,
+                         commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds).FirstOrDefault();
+                // copy all the database generated props back onto our entity
+                entities.All(x =>
+                {
+                    this.CopyEntity(insertedEntity, x, _sqlBuilder.RefreshOnInsertProperties);
+                    return true;
+                });
+            }
+            else
+            {
+                connection.Execute(
+                    _sqlBuilder.ConstructFullInsertStatement(),
+                    entities,
+                    transaction: transaction,
+                    commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds);
+            }
+
+            if (!hasTransaction)
+                transaction.Commit();
+        }
+
+        /// <summary>
+        /// Performs an Bulk INSERT operation
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public async Task BulkInsertAsync(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions)
+        {
+            var hasTransaction = statementOptions.Transaction != null;
+            IDbTransaction transaction = statementOptions.Transaction ?? connection.BeginTransaction(IsolationLevel.Serializable);
+
+            if (_sqlBuilder.RefreshOnInsertProperties.Length > 0)
+            {
+                var insertedEntity =
+                     (await connection.QueryAsync<TEntity>(
+                         _sqlBuilder.ConstructFullInsertStatement(),
+                         entities,
+                         transaction: transaction,
+                         commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds)).FirstOrDefault();
+                // copy all the database generated props back onto our entities
+                entities.All(x =>
+                {
+                    this.CopyEntity(insertedEntity, x, _sqlBuilder.RefreshOnInsertProperties);
+                    return true;
+                });
+            }
+            else
+            {
+                await connection.ExecuteAsync(
+                    _sqlBuilder.ConstructFullInsertStatement(),
+                    entities,
+                    transaction: transaction,
+                    commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds);
+            }
+
+            if (!hasTransaction)
+                transaction.Commit();
         }
 
         /// <summary>
@@ -142,10 +216,10 @@
             }
 
             return connection.Execute(
-                _sqlBuilder.ConstructFullSingleUpdateStatement(), 
-                keyEntity, 
-                transaction: 
-                statementOptions.Transaction, 
+                _sqlBuilder.ConstructFullSingleUpdateStatement(),
+                keyEntity,
+                transaction:
+                statementOptions.Transaction,
                 commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds) > 0;
         }
 
@@ -173,9 +247,9 @@
             }
 
             return (await connection.ExecuteAsync(
-                _sqlBuilder.ConstructFullSingleUpdateStatement(), 
-                keyEntity, 
-                transaction: statementOptions.Transaction, 
+                _sqlBuilder.ConstructFullSingleUpdateStatement(),
+                keyEntity,
+                transaction: statementOptions.Transaction,
                 commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds)) > 0;
         }
 
@@ -241,7 +315,7 @@
                 _sqlBuilder.ConstructFullBatchDeleteStatement(statementOptions.WhereClause),
                 statementOptions.Parameters,
                 transaction: statementOptions.Transaction,
-                commandTimeout:(int?)statementOptions.CommandTimeout?.TotalSeconds);
+                commandTimeout: (int?)statementOptions.CommandTimeout?.TotalSeconds);
         }
 
         /// <summary>
