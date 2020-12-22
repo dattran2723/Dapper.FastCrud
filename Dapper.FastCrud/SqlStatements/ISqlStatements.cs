@@ -18,7 +18,7 @@
     /// SQL statement factory.
     /// </summary>
     /// <typeparam name="TEntity">Target entity type</typeparam>
-    internal interface ISqlStatements<TEntity>: ISqlStatements
+    internal interface ISqlStatements<TEntity> : ISqlStatements
     {
         /// <summary>
         /// Combines the current instance with a joined entity.
@@ -44,6 +44,16 @@
         /// Performs an INSERT operation
         /// </summary>
         Task InsertAsync(IDbConnection connection, TEntity entity, AggregatedSqlStatementOptions<TEntity> statementOptions);
+
+        /// <summary>
+        /// Performs an Bulk INSERT operation
+        /// </summary>
+        void BulkInsert(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions);
+
+        /// <summary>
+        /// Performs an Bulk INSERT operation
+        /// </summary>
+        Task BulkInsertAsync(IDbConnection connection, IEnumerable<TEntity> entities, AggregatedSqlStatementOptions<TEntity> statementOptions);
 
         /// <summary>
         /// Performs an UPDATE operation on an entity identified by its keys.

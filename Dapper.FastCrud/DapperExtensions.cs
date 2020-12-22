@@ -83,6 +83,38 @@ namespace Dapper.FastCrud
         }
 
         /// <summary>
+        /// Inserts mutiple row into the database.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="entitiesToInsert"></param>
+        /// <param name="statementOptions">Optional statement options (usage: statement => statement.SetTimeout().AttachToTransaction()...)</param>
+        public static void BulkInsert<TEntity>(
+            this IDbConnection connection,
+            IEnumerable<TEntity> entitiesToInsert,
+            Action<IStandardSqlStatementOptionsBuilder<TEntity>> statementOptions = null)
+        {
+            var options = new StandardSqlStatementOptionsBuilder<TEntity>();
+            statementOptions?.Invoke(options);
+            options.SqlStatementsFactoryChain().BulkInsert(connection, entitiesToInsert, options);
+        }
+
+        /// <summary>
+        /// Inserts mutiple row into the database.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="entitiesToInsert"></param>
+        /// <param name="statementOptions">Optional statement options (usage: statement => statement.SetTimeout().AttachToTransaction()...)</param>
+        public static Task BulkInsertAsync<TEntity>(
+            this IDbConnection connection,
+            IEnumerable<TEntity> entitiesToInsert,
+            Action<IStandardSqlStatementOptionsBuilder<TEntity>> statementOptions = null)
+        {
+            var options = new StandardSqlStatementOptionsBuilder<TEntity>();
+            statementOptions?.Invoke(options);
+            return options.SqlStatementsFactoryChain().BulkInsertAsync(connection, entitiesToInsert, options);
+        }
+
+        /// <summary>
         /// Updates a record in the database.
         /// </summary>
         /// <param name="connection">Database connection.</param>
