@@ -465,10 +465,8 @@
                     // discover and append all the join conditions for the current table
                     var atLeastOneRelationshipDiscovered = false;
 
-                    //bỏ vòng lặp kiểm tra foreign key
-                    //for (var firstEntityJoinInstructionIndex = 0; firstEntityJoinInstructionIndex < secondEntityJoinInstructionIndex; firstEntityJoinInstructionIndex++)
+                    for (var firstEntityJoinInstructionIndex = 0; firstEntityJoinInstructionIndex < secondEntityJoinInstructionIndex; firstEntityJoinInstructionIndex++)
                     {
-                        var firstEntityJoinInstructionIndex = 0;
                         var firstEntitySqlInstruction = allSqlJoinInstructions[firstEntityJoinInstructionIndex];
                         var firstEntitySqlBuilder = firstEntitySqlInstruction.SqlBuilder;
 
